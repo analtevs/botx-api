@@ -16,9 +16,9 @@ dependencies {
     annotationProcessor 'org.projectlombok:lombok:1.18.24'
 
     testImplementation 'junit:junit:4.13.2'
-    testImplementation 'org.slf4j:slf4j-simple:1.7.36'
+    testImplementation 'org.slf4j:slf4j-simple:2.0.5'
 
-    implementation group: 'net.sf.jopt-simple', name:'jopt-simple', version: '5.0.4'
+    implementation group: 'net.sf.jopt-simple', name: 'jopt-simple', version: '5.0.4'
 
     // We want these both at compile and at runtime.
     // So we use implementation instead of compileOnly or runtimeOnly
@@ -63,14 +63,14 @@ enum OperatingSystem {
         final String env = System.getenv(NAME.toUpperCase().concat("_HOME"))
         if (env == null || env.isEmpty()) {
             String homeDirBuilder = System.getProperty("user.home")
-            switch(OperatingSystem.getOperatingSystem()) {
-                case OperatingSystem.LINUX:
+            switch (getOperatingSystem()) {
+                case LINUX:
                     homeDirBuilder += File.separator + ".config"
                     break
-                case OperatingSystem.MAC:
+                case MAC:
                     homeDirBuilder += (homeDirBuilder == null) ? "~" : ""
                     break
-                case OperatingSystem.WINDOWS:
+                case WINDOWS:
                     //Do nothing
                     break
                 default:
