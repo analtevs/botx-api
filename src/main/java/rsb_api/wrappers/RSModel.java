@@ -127,26 +127,30 @@ public class RSModel {
         public boolean doAction(String action, String target) {
 		try {
 			// only hop if it failed twice
-			for (int i = 0; i < 5; i++) {
+			for (int i = 0; i < 3; i++) {
+
 				log.info("Model.doAction - {}", i);
 
 				// only do this if we fail
-				var p = getPoint();
-				if (i > 2) {
-					ctx.mouse.hop(p);
-				} else {
-					ctx.mouse.move(p);
-				}
-
 				if (i == 0) {
-					ctx.sleepRandom(30, 75);
+					// fine for most cases
+					ctx.mouse.move(getPoint());
+					if (ctx.menu.doAction(action, target)) {
+						return true;
+					}
 
 				} else {
-					ctx.sleepRandom(40, 150);
-				}
+					// missed first time
+					ctx.mouse.move(getPoint());
+					if (ctx.menu.doAction(action, target)) {
+						return true;
+					}
 
-				if (ctx.menu.doAction(action, target)) {
-					return true;
+					log.info("Model.doAction - hop {}", i);
+					ctx.mouse.hop(getPoint());
+					if (ctx.menu.doAction(action, target)) {
+						return true;
+					}
 				}
 
 				ctx.sleepRandom(250, 750);
