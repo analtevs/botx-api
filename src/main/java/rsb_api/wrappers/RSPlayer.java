@@ -20,7 +20,7 @@ public class RSPlayer extends RSCharacter {
 		this.p = new SoftReference<>(p);
 	}
 
-	public Actor getAccessor() {
+	public Player getAccessor() {
 		return p.get();
 	}
 
