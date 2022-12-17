@@ -1,113 +1,51 @@
 package rsb_api.methods;
 
-import net.runelite.api.ItemComposition;
 import net.runelite.api.MenuEntry;
-import net.runelite.cache.definitions.ItemDefinition;
-import rsb_api.wrappers.RSItem;
 import net.runelite.client.ui.FontManager;
 
 import net.runelite.api.Point;
 
+import lombok.extern.slf4j.Slf4j;
+
 import java.awt.FontMetrics;
 import java.util.regex.Pattern;
-import lombok.extern.slf4j.Slf4j;
+import java.util.Arrays;
+import java.util.Collections;
+
 
 /**
  * Context menu related operations.
+ * XXX Doesn't support stretched or anything like that?
  */
 
 @Slf4j
 public class Menu {
-    private static final Pattern HTML_TAG = Pattern
-            .compile("(^[^<]+>|<[^>]+>|<[^>]+$)");
+    private final Pattern HTML_TAG = Pattern.compile("(^[^<]+>|<[^>]+>|<[^>]+$)");
+    private final int TOP_OF_MENU_BAR = 18;
 
-    protected static final int TOP_OF_MENU_BAR = 18;
-    protected static final int MENU_ENTRY_LENGTH = 15;
-    protected static final int MENU_SIDE_BORDER = 7;
-    protected static final int MAX_DISPLAYABLE_ENTRIES = 32;
+	// XXX isnt the height not length?
+    private final int MENU_ENTRY_LENGTH = 15;
 
-	private boolean LOG_MENU = false;
+    private final int MENU_SIDE_BORDER = 7;
+    private final int MAX_DISPLAYABLE_ENTRIES = 32;
+
+	private boolean LOG_MENU_DEBUG = true;
+
 	private MethodContext ctx;
+
 	Menu(final MethodContext ctx) {
 		this.ctx = ctx;
 	}
 
 
     /**
-     * Clicks the menu target. Will left-click if the menu item is the first,
-     * otherwise open menu and click the target.
+     * Strips HTML tags.
      *
-     * @param action The action (or action substring) to click.
-     * @return <code>true</code> if the menu item was clicked; otherwise
-     * <code>false</code>.
+     * @param input The string you want to parse.
+     * @return The parsed {@code String}.
      */
-    public boolean doAction(String action) {
-        return doAction(action, null);
-    }
-
-    /**
-     * Clicks the menu target. Will left-click if the menu item is the first,
-     * otherwise open menu and click the target.
-     *
-     * @param action The action (or action substring) to click.
-     * @param target The target (or target substring) of the action to click.
-     * @return <code>true</code> if the menu item was clicked; otherwise
-     * <code>false</code>.
-     */
-    public boolean doAction(final String action, String target) {
-        int idx = getIndex(action, target);
-		if (LOG_MENU) {
-			log.info(String.format("action: %s, target: %s, indx: %d", action, target, idx));
-		}
-
-        if (idx == -1 || idx > MAX_DISPLAYABLE_ENTRIES) {
-            while (isOpen()) {
-                ctx.mouse.moveRandomly(750);
-                ctx.sleepRandom(150, 250);
-            }
-
-			log.info(String.format("failed Menu.doAction() with idx %s", idx));
-            return false;
-        }
-
-        if (!isOpen()) {
-            if (idx == 0) {
-				if (LOG_MENU) {
-					log.info(String.format("left clicking action"));
-				}
-
-				log.info(String.format("Menu.doAction() - success left clicking action"));
-                ctx.mouse.click(true);
-                return true;
-            }
-
-			if (LOG_MENU) {
-				log.info(String.format("right click - open menu"));
-			}
-
-            // ensure we don't move after
-            ctx.mouse.click(false, 0);
-            for (int ii=0; ii<5; ii++) {
-                ctx.sleepRandom(150, 250);
-                if (isOpen()) {
-                    log.info(String.format("menu is now open"));
-                    break;
-                }
-            }
-        }
-
-        if (!isOpen()) {
-            log.warn(String.format("menu NOT open in doAction: %d", idx));
-            return false;
-        }
-
-		// recalculate index, and then if not changed, click
-        if (idx != getIndex(action, target)) {
-            log.warn("menu changed underneath feet");
-			return false;
-		}
-
-        return clickMain(idx);
+    private String stripFormatting(String input) {
+        return HTML_TAG.matcher(input).replaceAll("");
     }
 
 	private FontMetrics getFontMetrics() {
@@ -117,77 +55,55 @@ public class Menu {
     private boolean clickMain(final int i) {
         MenuEntry[] entries = getEntries();
         String item = (entries[i].getOption() + " " + entries[i].getTarget().replaceAll("<.*?>", ""));
-        Point menu = getLocation();
+		int x = ctx.proxy.getMenuX();
+		int y = ctx.proxy.getMenuY();
+
         FontMetrics fm = getFontMetrics();
 
-        int width = (fm.stringWidth(item) + MENU_SIDE_BORDER) / 2;
-        int rwidth = Math.max(2, (int) (width * 0.8));
-        int xOff = width + ctx.random(-rwidth, rwidth);
+        int mid = (fm.stringWidth(item) + MENU_SIDE_BORDER) / 2;
+        int rwidth = Math.max(2, (int) (fm.stringWidth(item) * 0.25));
+        int xOff = mid + ctx.random(-rwidth, rwidth);
 
-		if (LOG_MENU) {
-			log.info(String.format("width %d, rwidth %d, xOff %d", width, rwidth, xOff));
-		}
 
         int yOff = TOP_OF_MENU_BAR + (((MENU_ENTRY_LENGTH * i) + ctx.random(2, MENU_ENTRY_LENGTH - 2)));
 
-        ctx.mouse.move(menu.getX() + xOff, menu.getY() + yOff);
-        ctx.sleepRandom(50, 125);
 
-        if (this.isOpen()) {
-            ctx.mouse.click(true);
-			log.info(String.format("Click menu success"));
-            return true;
-        }
+		if (LOG_MENU_DEBUG) {
+			//log.info("x {}, y {} w {} h {}", calculateX(), calculateY(),
+			//		 calculateWidth(), calculateHeight());
+			log.info("xx {}, yy {} ww {} hh {}",
+					 ctx.proxy.getMenuX(),
+					 ctx.proxy.getMenuY(),
+					 ctx.proxy.getMenuWidth(),
+					 ctx.proxy.getMenuHeight());
 
-        log.warn(String.format("NOT OPEN in clickMain() :("));
-        return false;
-    }
+			log.info("mid {}, xOff {}", x + mid, x + xOff);
+		}
 
-    /**
-     * Determines if the item contains the desired action.
-     *
-     * @param item   The item to check.
-     * @param action The item menu action to check.
-     * @return <code>true</code> if the item has the action; otherwise
-     * <code>false</code>.
-     */
-    public boolean itemHasAction(final RSItem item, final String action) {
-        // Used to determine if an item is droppable/destroyable
-        if (item == null) {
-            return false;
-        }
-        ItemDefinition itemDef = item.getDefinition();
-        if (itemDef != null) {
-            for (String a : itemDef.getInterfaceOptions()) {
-                if (a.equalsIgnoreCase(action)) {
-                    return true;
-                }
-            }
-        }
-        return false;
-    }
+		x += xOff;
+		y += yOff;
 
-    public Point getLocation() {
-        return new Point(calculateX(), calculateY());
-    }
+        ctx.mouse.move(x, y);
+		// XXX ZZZ this seems insanely fast - needs to be configurable
+		ctx.sleepRandom(50, 125);
 
-    /**
-     * Checks whether or not the menu is open.
-     *
-     * @return <code>true</code> if the menu is open; otherwise <code>false</code>.
-     */
-    public boolean isOpen() {
-        return ctx.proxy.isMenuOpen();
-    }
+        if (!this.isOpen()) {
+			log.warn("NOT OPEN anymore in clickMain() :(");
+			return false;
+		}
 
-    /**
-     * Strips HTML tags.
-     *
-     * @param input The string you want to parse.
-     * @return The parsed {@code String}.
-     */
-    public static String stripFormatting(String input) {
-        return HTML_TAG.matcher(input).replaceAll("");
+		if (!ctx.mouse.isPresent()) {
+			log.warn("Mouse moved offscreen");
+			// XXX dump everything here
+			return false;
+		}
+
+		ctx.mouse.click(true);
+		if (LOG_MENU_DEBUG) {
+			log.info("Click menu success");
+		}
+
+		return true;
     }
 
     /**
@@ -195,92 +111,78 @@ public class Menu {
      *
      * @return the menu width
      */
-    protected int calculateWidth() {
-        MenuEntry[] entries = getEntries();
-        final int MIN_MENU_WIDTH = 102;
-		FontMetrics fm = getFontMetrics();
+    // private int calculateWidth() {
+    //     MenuEntry[] entries = getEntries();
+    //     final int MIN_MENU_WIDTH = 102;
+	// 	FontMetrics fm = getFontMetrics();
 
-        int longestEntry = 0;
-        for (MenuEntry entry : entries) longestEntry = (fm.stringWidth(entry.getOption() + " " +
-                entry.getTarget().replaceAll("<.*?>", ""))
-                > longestEntry) ? fm.stringWidth(entry.getOption() + " " +
-                entry.getTarget().replaceAll("<.*?>", "")) : longestEntry;
-        return (longestEntry + MENU_SIDE_BORDER < MIN_MENU_WIDTH) ? MIN_MENU_WIDTH : longestEntry + MENU_SIDE_BORDER;
-    }
+    //     int longestEntry = 0;
+    //     for (MenuEntry entry : entries) {
+	// 		var l = fm.stringWidth(entry.getOption() + " " + entry.getTarget().replaceAll("<.*?>", ""));
+	// 		if (l > longestEntry) {
+	// 			longestEntry = l;
+	// 		}
+	// 	}
 
-    /**
-     * Calculates the height of the menu
-     *
-     * @return the menu height
-     */
-    protected int calculateHeight() {
-        MenuEntry[] entries = getEntries();
-        int numberOfEntries = entries.length;
-        return MENU_ENTRY_LENGTH * numberOfEntries + TOP_OF_MENU_BAR;
-    }
+    //     return Math.max(longestEntry + MENU_SIDE_BORDER, MIN_MENU_WIDTH);
+    // }
 
-    /**
-     * Calculates the top left corner X of the menu
-     *
-     * @return the menu x
-     */
-    protected int calculateX() {
-        if (isOpen()) {
-            final int MIN_MENU_WIDTH = 102;
-            int width = calculateWidth();
-			Point p = ctx.mouse.getPressLocation();
-            if (width + MENU_SIDE_BORDER < MIN_MENU_WIDTH) {
-				return p.getX() - (MIN_MENU_WIDTH / 2);
-			} else {
-				return p.getX() - (width / 2);
-			}
-        }
-        return -1;
-    }
+    // /**
+    //  * Calculates the height of the menu
+    //  *
+    //  * @return the menu height
+    //  */
+    // private int calculateHeight() {
+    //     MenuEntry[] entries = getEntries();
+    //     int numberOfEntries = entries.length;
+    //     return MENU_ENTRY_LENGTH * numberOfEntries + TOP_OF_MENU_BAR;
+    // }
 
-    /**
-     * Calculates the top left corner Y of the menu
-     *
-     * @return the menu y
-     */
-    protected int calculateY() {
-        if (isOpen()) {
-            final int CANVAS_LENGTH = ctx.proxy.getCanvasHeight();
-            MenuEntry[] entries = getEntries();
+    // /**
+    //  * Calculates the top left corner X of the menu
+    //  *
+    //  * @return the menu x
+    //  */
+    // private int calculateX() {
+    //     if (isOpen()) {
+    //         final int MIN_MENU_WIDTH = 102;
+    //         int width = calculateWidth();
+	// 		Point p = ctx.mouse.getPressLocation();
+    //         if (width + MENU_SIDE_BORDER < MIN_MENU_WIDTH) {
+	// 			return p.getX() - (MIN_MENU_WIDTH / 2);
+	// 		} else {
+	// 			return p.getX() - (width / 2);
+	// 		}
+    //     }
 
-			Point p = ctx.mouse.getPressLocation();
+    //     return -1;
+    // }
 
-            int offset = CANVAS_LENGTH - (p.getY() + calculateHeight());
-            if (offset < 0 && entries.length >= MAX_DISPLAYABLE_ENTRIES) {
-                return 0;
-            }
+    // /**
+    //  * Calculates the top left corner Y of the menu
+    //  *
+    //  * @return the menu y
+    //  */
+    // private int calculateY() {
+    //     if (isOpen()) {
+    //         final int CANVAS_LENGTH = ctx.proxy.getCanvasHeight();
+    //         MenuEntry[] entries = getEntries();
 
-            if (offset < 0) {
-                return p.getY() + offset;
-            }
+	// 		Point p = ctx.mouse.getPressLocation();
 
-            return p.getY();
-        }
-        return -1;
-    }
+    //         int offset = CANVAS_LENGTH - (p.getY() + calculateHeight());
+    //         if (offset < 0 && entries.length >= MAX_DISPLAYABLE_ENTRIES) {
+    //             return 0;
+    //         }
 
-    public MenuEntry[] getEntries() {
-        // gets from runelite
-        MenuEntry[] entries = ctx.proxy.getMenuEntries();
-        MenuEntry[] reversed = new MenuEntry[entries.length];
-        for (int i = entries.length - 1, x = 0; i >= 0; i--, x++)
-            reversed[i] = entries[x];
-        return reversed;
-    }
+    //         if (offset < 0) {
+    //             return p.getY() + offset;
+    //         }
 
-    public String[] getEntriesString() {
-        MenuEntry[] entries = getEntries();
-        String[] entryStrings = new String[entries.length];
-        for (int i = 0; i < entries.length; i++) {
-            entryStrings[i] = stripFormatting(entries[i].getOption()) + " " + ((entries[i].getTarget() != null) ? stripFormatting(entries[i].getTarget()) : "");
-        }
-        return entryStrings;
-    }
+    //         return p.getY();
+    //     }
+    //     return -1;
+    // }
 
     /**
      * Returns the index in the menu for a given action. Starts at 0.
@@ -298,7 +200,6 @@ public class Menu {
                 continue;
             }
 
-            // XXX can this be null?
             String menuAction = entries[i].getOption().toLowerCase();
 
             if (menuAction.contains(action)) {
@@ -332,7 +233,6 @@ public class Menu {
                 continue;
             }
 
-            // XXX can these be null?
             String menuAction = entries[i].getOption().toLowerCase();
             String menuTarget = entries[i].getTarget().toLowerCase();
 
@@ -345,26 +245,106 @@ public class Menu {
     }
 
     /**
-     * Checks whether or not a given action (or action substring) is present in
-     * the menu.
+     * Clicks the menu target. Will left-click if the menu item is the first,
+     * otherwise open menu and click the target.
      *
-     * @param action The action or action substring.
-     * @return <code>true</code> if present, otherwise <code>false</code>.
+     * @param action The action (or action substring) to click.
+     * @return <code>true</code> if the menu item was clicked; otherwise
+     * <code>false</code>.
      */
-    public boolean contains(final String action) {
-        return getIndex(action) != -1;
+    public boolean doAction(String action) {
+        return doAction(action, null);
     }
 
     /**
-     * Checks whether or not a given action with given target is present
-     * in the menu.
+     * Clicks the menu target. Will left-click if the menu item is the first,
+     * otherwise open menu and click the target.
      *
-     * @param action The action or action substring.
-     * @param target The target or target substring.
-     * @return <code>true</code> if present, otherwise <code>false</code>.
+     * @param action The action (or action substring) to click.
+     * @param target The target (or target substring) of the action to click.
+     * @return <code>true</code> if the menu item was clicked; otherwise
+     * <code>false</code>.
      */
-    public boolean contains(final String action, final String target) {
-        return getIndex(action, target) != -1;
+    public boolean doAction(final String action, String target) {
+        int idx = getIndex(action, target);
+		if (LOG_MENU_DEBUG) {
+			log.info("action: {}, target: {}, indx: {}", action, target, idx);
+		}
+
+        if (idx == -1 || idx > MAX_DISPLAYABLE_ENTRIES) {
+            while (isOpen()) {
+                ctx.mouse.moveRandomly(750);
+                ctx.sleepRandom(150, 250);
+            }
+
+			log.info("failed Menu.doAction() with idx {}", idx);
+            return false;
+        }
+
+        if (!isOpen()) {
+            if (idx == 0) {
+				if (LOG_MENU_DEBUG) {
+					log.info("left clicking action");
+					log.info("Menu.doAction() - success left clicking action");
+				}
+
+                ctx.mouse.click(true);
+                return true;
+            }
+
+			if (LOG_MENU_DEBUG) {
+				log.info("right click - open menu");
+			}
+
+            // ensure we don't move after
+            ctx.mouse.click(false, 0);
+            for (int ii=0; ii<5; ii++) {
+                ctx.sleepRandom(150, 250);
+                if (isOpen()) {
+					if (LOG_MENU_DEBUG) {
+						log.info("menu is now open");
+					}
+                    break;
+                }
+            }
+        }
+
+        if (!isOpen()) {
+            log.warn("menu NOT open in doAction: {}", idx);
+            return false;
+        }
+
+		// recalculate index, and then if not changed, click
+        if (idx != getIndex(action, target)) {
+            log.warn("menu changed underneath feet");
+			return false;
+		}
+
+        return clickMain(idx);
+    }
+
+    public MenuEntry[] getEntries() {
+        // gets from runelite
+        MenuEntry[] entries = ctx.proxy.getMenuEntries();
+
+		// XXX surely can just let java do this?
+		Collections.reverse(Arrays.asList(entries));
+		return entries;
+
+        // MenuEntry[] reversed = new MenuEntry[entries.length];
+        // for (int i = entries.length - 1, x = 0; i >= 0; i--, x++) {
+        //     reversed[i] = entries[x];
+		// }
+        // return reversed;
+    }
+
+    public String[] getEntriesString() {
+        MenuEntry[] entries = getEntries();
+        String[] entryStrings = new String[entries.length];
+        for (int i = 0; i < entries.length; i++) {
+            entryStrings[i] = stripFormatting(entries[i].getOption()) + " " + ((entries[i].getTarget() != null) ? stripFormatting(entries[i].getTarget()) : "");
+        }
+        return entryStrings;
     }
 
 	public String getHoverText() {
@@ -372,5 +352,18 @@ public class Menu {
 		var entries = getEntriesString();
 		String item = entries[0];
 		return (entries.length > 2) ? item + " / " + (entries.length - 1) + " more options" : item;
+	}
+
+    /**
+     * Checks whether or not the menu is open.
+     *
+     * @return <code>true</code> if the menu is open; otherwise <code>false</code>.
+     */
+    public boolean isOpen() {
+        return ctx.proxy.isMenuOpen();
+    }
+
+	public void enableDebug(boolean value) {
+		LOG_MENU_DEBUG = value;
 	}
 }

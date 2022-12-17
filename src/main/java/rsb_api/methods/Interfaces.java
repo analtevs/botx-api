@@ -93,40 +93,6 @@ public class Interfaces {
 	}
 
 	/**
-	 * Performs the given action on this RSWidgetChild if it is showing
-	 * (valid).
-	 *
-	 * @param c			The component widget to click
-	 * @param action 	The menu action to click.
-	 *
-	 * @return <code>true</code> if the action was clicked; otherwise <code>false</code>
-	 */
-	public boolean clickComponent(final RSWidget c, final String action) {
-		if (!c.isValid()) {
-			return false;
-		}
-		Rectangle rect = c.getArea();
-		if (rect.x == -1) {
-			return false;
-		}
-
-		// 1 pixel is not enough for all components
-		int minX = rect.x + 2, minY = rect.y + 2, width = rect.width - 4, height = rect.height - 4;
-
-		// Check if the menu already contains the action otherwise reposition before clicking
-		var r = new Rectangle(minX, minY, width, height);
-		var p = new Point (ctx.mouse.getLocation().getX(), ctx.mouse.getLocation().getY());
-		if (r.contains(p) && ctx.menu.contains(action) && ctx.menu.doAction(action)) {
-			return true;
-		}
-
-		// ZZZ this needs to be better...
-		ctx.mouse.move(ctx.random(minX, minX + width - 4),
-					   ctx.random(minY, minY + height - 4));
-		return ctx.menu.doAction(action);
-	}
-
-	/**
 	 * Clicks the dialogue option that contains the desired string.
 	 *
 	 * @param inter  The interface of the dialogue menu.
@@ -289,66 +255,5 @@ public class Interfaces {
 
 	public boolean isValid(int index) {
 		return get(index).isValid();
-	}
-
-	/**
-	 * Uses the make interface to make items
-	 * Use -1 to make all
-	 *
-	 * @param amount The number of items to make
-	 * @return <code>true</code> f the interface was interacted with; else <code>false</code>
-	 */
-	// TODO: why the heck should i be forced to make only first option if multiple choices exist!
-	public boolean makeX(int amount) {
-		RSWidget widget = null;
-		if (amount == -1) {
-			widget = new RSWidget(ctx, ctx.proxy.getWidget(WidgetIndices.MakeDialog.GROUP_INDEX, WidgetIndices.MakeDialog.BUTTON_ALL_DYNAMIC_CONTAINER));
-			if (!widget.isValid()) {
-				return false;
-			}
-			widget = new RSWidget(ctx, ctx.proxy.getWidget(WidgetIndices.MakeDialog.GROUP_INDEX, WidgetIndices.MakeDialog.BUTTON_ALL_DYNAMIC_CONTAINER)).getDynamicComponent(9);
-			//Determines if the widget is already selected
-			if (!widget.containsText("<col=ffffff>")) {
-				clickComponent(widget, "All");
-			}
-			widget = new RSWidget(ctx, ctx.proxy.getWidget(WidgetIndices.MakeDialog.GROUP_INDEX, WidgetIndices.MakeDialog.BOTTOM_BAR_FIRST_CHOICE_BAR_DYN_CONTAINER));
-			return clickComponent(widget, "Make");
-		} else if (amount == 1) {
-			widget = new RSWidget(ctx, ctx.proxy.getWidget(WidgetIndices.MakeDialog.GROUP_INDEX, WidgetIndices.MakeDialog.BUTTON_ONE_DYNAMIC_CONTAINER));
-			if (!widget.isValid()) {
-				return false;
-			}
-			widget = new RSWidget(ctx, ctx.proxy.getWidget(WidgetIndices.MakeDialog.GROUP_INDEX, WidgetIndices.MakeDialog.BUTTON_ONE_DYNAMIC_CONTAINER)).getDynamicComponent(9);
-			if (!widget.containsText("<col=ffffff>")) {
-				clickComponent(widget, "1");
-			}
-			widget = new RSWidget(ctx, ctx.proxy.getWidget(WidgetIndices.MakeDialog.GROUP_INDEX, WidgetIndices.MakeDialog.BOTTOM_BAR_FIRST_CHOICE_BAR_DYN_CONTAINER));
-			return clickComponent(widget, "Make " + Menu.stripFormatting(widget.getName()));
-		} else if (amount == 5) {
-			widget = new RSWidget(ctx, ctx.proxy.getWidget(WidgetIndices.MakeDialog.GROUP_INDEX, WidgetIndices.MakeDialog.BUTTON_FIVE_DYNAMIC_CONTAINER));
-			if (!widget.isValid()) {
-				return false;
-			}
-			widget = new RSWidget(ctx, ctx.proxy.getWidget(WidgetIndices.MakeDialog.GROUP_INDEX, WidgetIndices.MakeDialog.BUTTON_FIVE_DYNAMIC_CONTAINER)).getDynamicComponent(9);
-			if (!widget.containsText("<col=ffffff>")) {
-				clickComponent(widget, "5");
-			}
-			widget = new RSWidget(ctx, ctx.proxy.getWidget(WidgetIndices.MakeDialog.GROUP_INDEX, WidgetIndices.MakeDialog.BOTTOM_BAR_FIRST_CHOICE_BAR_DYN_CONTAINER));
-			return clickComponent(widget, "Make " + Menu.stripFormatting(widget.getName()));
-		} else {
-			widget = new RSWidget(ctx, ctx.proxy.getWidget(WidgetIndices.MakeDialog.GROUP_INDEX, WidgetIndices.MakeDialog.BUTTON_X_DYNAMIC_CONTAINER));
-			if (!widget.isValid()) {
-				return false;
-			}
-			widget = new RSWidget(ctx, ctx.proxy.getWidget(WidgetIndices.MakeDialog.GROUP_INDEX, WidgetIndices.MakeDialog.BUTTON_X_DYNAMIC_CONTAINER)).getDynamicComponent(9);
-			clickComponent(widget, "X");
-			ctx.keyboard.sendText(String.valueOf(amount), true);
-			widget = new RSWidget(ctx, ctx.proxy.getWidget(WidgetIndices.MakeDialog.GROUP_INDEX, WidgetIndices.MakeDialog.BUTTON_X_DYNAMIC_CONTAINER)).getDynamicComponent(9);
-			if (!widget.containsText("<col=ffffff>")) {
-				clickComponent(widget, String.valueOf(amount));
-			}
-			widget = new RSWidget(ctx, ctx.proxy.getWidget(WidgetIndices.MakeDialog.GROUP_INDEX, WidgetIndices.MakeDialog.BOTTOM_BAR_FIRST_CHOICE_BAR_DYN_CONTAINER));
-			return clickComponent(widget, "Make " + Menu.stripFormatting(widget.getName()));
-		}
 	}
 }
