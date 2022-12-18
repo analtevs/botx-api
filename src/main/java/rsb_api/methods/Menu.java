@@ -53,31 +53,20 @@ public class Menu {
 	}
 
     private boolean clickMain(final int i) {
-        MenuEntry[] entries = getEntries();
-        String item = (entries[i].getOption() + " " + entries[i].getTarget().replaceAll("<.*?>", ""));
 		int x = ctx.proxy.getMenuX();
 		int y = ctx.proxy.getMenuY();
+        int w = ctx.proxy.getMenuWidth();
+        int h = ctx.proxy.getMenuHeight();
 
-        FontMetrics fm = getFontMetrics();
-
-        int mid = (fm.stringWidth(item) + MENU_SIDE_BORDER) / 2;
-        int rwidth = Math.max(2, (int) (fm.stringWidth(item) * 0.25));
+        int mid = w / 2;
+        int rwidth = Math.max(4, w / 3);
         int xOff = mid + ctx.random(-rwidth, rwidth);
-
-
         int yOff = TOP_OF_MENU_BAR + (((MENU_ENTRY_LENGTH * i) + ctx.random(2, MENU_ENTRY_LENGTH - 2)));
 
 
 		if (LOG_MENU_DEBUG) {
-			//log.info("x {}, y {} w {} h {}", calculateX(), calculateY(),
-			//		 calculateWidth(), calculateHeight());
-			log.info("xx {}, yy {} ww {} hh {}",
-					 ctx.proxy.getMenuX(),
-					 ctx.proxy.getMenuY(),
-					 ctx.proxy.getMenuWidth(),
-					 ctx.proxy.getMenuHeight());
-
-			log.info("mid {}, xOff {}", x + mid, x + xOff);
+			log.info("xx {}, yy {} ww {} hh {}", x, y, w, h);
+			log.info("mid {}, xOff {}", mid, xOff);
 		}
 
 		x += xOff;
