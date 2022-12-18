@@ -758,19 +758,9 @@ public class Bank {
 		String defaultAction = "Withdraw-" + count;
 		String action = null;
 		switch (count) {
-			case 0:
-				action = "Withdraw-All";
-				break;
-			case 1:
-				action = defaultAction;
-				break;
-			case 5:
-				action = defaultAction;
-				break;
-			case 10:
-				action = defaultAction;
-				break;
-			default:
+			case 0 -> action = "Withdraw-All";
+			case 1, 5, 10 -> action = defaultAction;
+			default -> {
 				int i = -1;
 				try {
 					i = Integer.parseInt(item.getActions()[4].toLowerCase().trim().replaceAll("\\D", ""));
@@ -779,11 +769,11 @@ public class Bank {
 				}
 				if (i == count) {
 					action = defaultAction;
-				}
-				else if (item.doAction("Withdraw-X")) {
+				} else if (item.doAction("Withdraw-X")) {
 					ctx.sleepRandom(1000, 1300);
 					ctx.keyboard.sendText(String.valueOf(count), true);
 				}
+			}
 		}
 		if (action != null && item.doAction(action)) {
 			ctx.sleepRandom(1000, 1300);
