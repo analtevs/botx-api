@@ -114,8 +114,7 @@ public class RSTile {
         if (obj == this) {
             return true;
         }
-        if (obj instanceof RSTile) {
-            final RSTile tile = (RSTile) obj;
+        if (obj instanceof final RSTile tile) {
             return (tile.x == x) && (tile.y == y) && ((tile.plane != NO_PLANE_SET && this.plane != NO_PLANE_SET) && (tile.plane == plane));
         }
         return false;
