@@ -1,6 +1,5 @@
 package rsb_api.wrappers;
 
-import net.runelite.api.widgets.Widget;
 import net.runelite.api.widgets.WidgetItem;
 import rsb_api.methods.MethodContext;
 
@@ -10,18 +9,18 @@ import java.awt.*;
 public class RSWidgetItem {
 
     private final WidgetItem item;
-    private final Widget parent;
 
-	private final MethodContext ctx;
+    private final MethodContext ctx;
+
     RSWidgetItem(MethodContext ctx, WidgetItem item) {
         this.ctx = ctx;
         this.item = item;
-        this.parent = item.getWidget();
     }
 
     public boolean isValid() {
         return item != null;
     }
+
     /**
      * Performs the given action on this RSInterfaceChild if it is
      * showing (valid).
@@ -49,12 +48,11 @@ public class RSWidgetItem {
         if (rect.x == -1 || rect.y == -1 || rect.width == -1 || rect.height == -1) {
             return false;
         }
-        if (!rect.contains(new Point (ctx.mouse.getLocation().getX(), ctx.mouse.getLocation().getY()))) {
+        if (!rect.contains(new Point(ctx.mouse.getLocation().getX(), ctx.mouse.getLocation().getY()))) {
             int min_x = rect.x + 1, min_y = rect.y + 1;
             int max_x = min_x + rect.width - 2, max_y = min_y + rect.height - 2;
 
-            ctx.mouse.move(ctx.random(min_x, max_x, rect.width / 3),
-						   ctx.random(min_y, max_y, rect.height / 3));
+            ctx.mouse.move(ctx.random(min_x, max_x, rect.width / 3), ctx.random(min_y, max_y, rect.height / 3));
             ctx.sleepRandom(40, 80);
         }
         return ctx.menu.doAction(action, option);
@@ -86,7 +84,7 @@ public class RSWidgetItem {
             return false;
         }
 
-        if (rect.contains(new Point (ctx.mouse.getLocation().getX(), ctx.mouse.getLocation().getY()))) {
+        if (rect.contains(new Point(ctx.mouse.getLocation().getX(), ctx.mouse.getLocation().getY()))) {
             ctx.mouse.click(true);
             return true;
         }
@@ -94,8 +92,7 @@ public class RSWidgetItem {
         int min_x = rect.x + 1, min_y = rect.y + 1;
         int max_x = min_x + rect.width - 2, max_y = min_y + rect.height - 2;
 
-        ctx.mouse.click(ctx.random(min_x, max_x, rect.width / 3),
-						ctx.random(min_y, max_y, rect.height / 3), leftClick);
+        ctx.mouse.click(ctx.random(min_x, max_x, rect.width / 3), ctx.random(min_y, max_y, rect.height / 3), leftClick);
         return true;
     }
 
@@ -121,8 +118,7 @@ public class RSWidgetItem {
         int min_x = rect.x + 1, min_y = rect.y + 1;
         int max_x = min_x + rect.width - 2, max_y = min_y + rect.height - 2;
 
-        ctx.mouse.move(ctx.random(min_x, max_x, rect.width / 3),
-					   ctx.random(min_y, max_y, rect.height / 3));
+        ctx.mouse.move(ctx.random(min_x, max_x, rect.width / 3), ctx.random(min_y, max_y, rect.height / 3));
         return true;
     }
 
