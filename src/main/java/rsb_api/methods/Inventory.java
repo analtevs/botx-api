@@ -1,6 +1,8 @@
 package rsb_api.methods;
 
+import net.runelite.api.InventoryID;
 import net.runelite.api.ItemComposition;
+import net.runelite.api.ItemContainer;
 import net.runelite.api.widgets.WidgetInfo;
 import net.runelite.cache.definitions.ItemDefinition;
 import net.runelite.client.ui.DrawManager;
@@ -11,10 +13,7 @@ import rsb_api.wrappers.*;
 
 import java.awt.*;
 import java.awt.image.BufferedImage;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
@@ -602,6 +601,7 @@ public class Inventory {
 	 * @return the index of the item selected; otherwise -1
 	 */
 	public int getSelected(Image img, RSWidgetItem[] comps) {
+		/*
 		BufferedImage im = new BufferedImage(ctx.proxy.getCanvasWidth(),
 											 ctx.proxy.getCanvasHeight(),
 											 BufferedImage.TYPE_INT_ARGB);
@@ -627,6 +627,7 @@ public class Inventory {
 				}
 			}
 		}
+		*/
 		return -1;
 	}
 
