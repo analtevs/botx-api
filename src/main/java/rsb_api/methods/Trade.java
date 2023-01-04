@@ -218,7 +218,7 @@ public class Trade  {
 	 *  ElevenGolden has 10 free inventory slots.
 	 * @return The number of free slots.
 	 */
-	private int getFreeSlots() {
+	public int getFreeSlots() {
 		if (inTradeMain()) {
 			String text = ctx.interfaces.getComponent(GlobalWidgetInfo.TRADE_MAIN_SCREEN_PARTNER_FREE_SLOTS).getText();
 			//
