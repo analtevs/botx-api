@@ -1,7 +1,6 @@
 package rsb_api.wrappers;
 
 import net.runelite.api.widgets.Widget;
-import net.runelite.api.widgets.WidgetItem;
 import net.runelite.rsb.internal.globval.GlobalWidgetInfo;
 import rsb_api.methods.MethodContext;
 import rsb_api.wrappers.common.Clickable07;
@@ -16,7 +15,8 @@ public class RSWidget implements Clickable07 {
     private final Widget widget;
     private final Widget parentWidget;
 
-	private final MethodContext ctx;
+    private final MethodContext ctx;
+
     public RSWidget(final MethodContext ctx, final Widget widget) {
         this.ctx = ctx;
 
@@ -25,8 +25,7 @@ public class RSWidget implements Clickable07 {
             this.widget = widget;
             this.parentWidget = widget.getParent();
             this.parentId = (parentWidget != null) ? parentWidget.getId() : -1;
-        }
-        else {
+        } else {
             this.id = -1;
             this.widget = null;
             this.parentWidget = null;
@@ -46,7 +45,9 @@ public class RSWidget implements Clickable07 {
         return isValid() && (isSelfVisible() && !widget.isHidden());
     }
 
-    public boolean isSelfVisible() {return isValid() && !widget.isSelfHidden();}
+    public boolean isSelfVisible() {
+        return isValid() && !widget.isSelfHidden();
+    }
 
     /**
      * Performs the given action on this RSInterfaceChild if it is
@@ -76,12 +77,11 @@ public class RSWidget implements Clickable07 {
             return false;
         }
 
-		int min_x = rect.x + 1, min_y = rect.y + 1;
-		int max_x = min_x + rect.width - 2, max_y = min_y + rect.height - 2;
+        int min_x = rect.x + 1, min_y = rect.y + 1;
+        int max_x = min_x + rect.width - 2, max_y = min_y + rect.height - 2;
 
-		ctx.mouse.move(ctx.random(min_x, max_x, rect.width / 2),
-					   ctx.random(min_y, max_y, rect.height / 3));
-		ctx.sleepRandom(40, 80);
+        ctx.mouse.move(ctx.random(min_x, max_x, rect.width / 2), ctx.random(min_y, max_y, rect.height / 3));
+        ctx.sleepRandom(40, 80);
 
         return ctx.menu.doAction(action, option);
     }
@@ -98,11 +98,11 @@ public class RSWidget implements Clickable07 {
     /**
      * Clicks this component.
      *
-     * @param leftClick <code>true</code> to left-click; <code>false</code>
-     *                  to right-click.
+     * @param isLeftClick <code>true</code> to left-click; <code>false</code>
+     *                    to right-click.
      * @return <code>true</code> if the component was clicked.
      */
-    public boolean doClick(boolean leftClick) {
+    public boolean doClick(boolean isLeftClick) {
         if (!isValid()) {
             return false;
         }
@@ -114,9 +114,10 @@ public class RSWidget implements Clickable07 {
         int min_x = rect.x + 1, min_y = rect.y + 1;
         int max_x = min_x + rect.width - 2, max_y = min_y + rect.height - 2;
 
-        ctx.mouse.click(ctx.random(min_x, max_x, rect.width / 3),
-						ctx.random(min_y, max_y, rect.height / 3),
-						leftClick);
+        int x = ctx.random(min_x, max_x, rect.width / 3);
+        int y = ctx.random(min_y, max_y, rect.height / 3);
+
+        ctx.mouse.click(x, y, isLeftClick);
         return true;
     }
 
@@ -143,8 +144,7 @@ public class RSWidget implements Clickable07 {
         int min_x = rect.x + 1, min_y = rect.y + 1;
         int max_x = min_x + rect.width - 2, max_y = min_y + rect.height - 2;
 
-        ctx.mouse.move(ctx.random(min_x, max_x, rect.width / 3),
-					   ctx.random(min_y, max_y, rect.height / 3));
+        ctx.mouse.move(ctx.random(min_x, max_x, rect.width / 3), ctx.random(min_y, max_y, rect.height / 3));
         return true;
     }
 
@@ -155,10 +155,10 @@ public class RSWidget implements Clickable07 {
      * @return the absolute x or -1 if null
      */
     public int getAbsoluteX() {
-		var canvasLoc = this.widget.getCanvasLocation();
-		if (canvasLoc == null) {
-			return -1;
-		}
+        var canvasLoc = this.widget.getCanvasLocation();
+        if (canvasLoc == null) {
+            return -1;
+        }
 
         return canvasLoc.getX();
     }
@@ -170,10 +170,10 @@ public class RSWidget implements Clickable07 {
      * @return the absolute y position or -1 if null
      */
     public int getAbsoluteY() {
-		var canvasLoc = this.widget.getCanvasLocation();
-		if (canvasLoc == null) {
-			return -1;
-		}
+        var canvasLoc = this.widget.getCanvasLocation();
+        if (canvasLoc == null) {
+            return -1;
+        }
 
         return canvasLoc.getY();
     }
@@ -213,32 +213,29 @@ public class RSWidget implements Clickable07 {
         children = widget.getStaticChildren();
         if (children != null) {
             childComponents = convertToRSWidget(children);
-            if (childComponents != null)
-            {
-                for (RSWidget component : childComponents)
-                {
+            if (childComponents != null) {
+                for (RSWidget component : childComponents) {
                     RSWidget[] childNode = component.getComponents();
-                    if (childNode != null)
-                    {
+                    if (childNode != null) {
                         components.addAll(Arrays.asList(childNode));
                     }
                 }
             }
         }
-		if (nested) {
-			children = widget.getNestedChildren();
-			if (children != null) {
-				childComponents = convertToRSWidget(children);
-				if (childComponents != null) {
-					for (RSWidget component : childComponents) {
-						RSWidget[] childNode = component.getComponents();
-						if (childNode != null) {
-							components.addAll(Arrays.asList(childNode));
-						}
-					}
-				}
-			}
-		}
+        if (nested) {
+            children = widget.getNestedChildren();
+            if (children != null) {
+                childComponents = convertToRSWidget(children);
+                if (childComponents != null) {
+                    for (RSWidget component : childComponents) {
+                        RSWidget[] childNode = component.getComponents();
+                        if (childNode != null) {
+                            components.addAll(Arrays.asList(childNode));
+                        }
+                    }
+                }
+            }
+        }
         if (components.size() < 1) {
             components.add(this);
         }
@@ -246,7 +243,7 @@ public class RSWidget implements Clickable07 {
     }
 
     public RSWidget[] getComponents() {
-		return getComponents(true);
+        return getComponents(true);
     }
 
     RSWidget[] convertToRSWidget(Widget[] widgets) {
@@ -277,7 +274,7 @@ public class RSWidget implements Clickable07 {
      * @return the border thickness or -1 if null
      */
     public int getBorderThickness() {
-        final Widget inter = this.widget;;
+        final Widget inter = this.widget;
         if (inter != null) {
             return inter.getBorderType();
         }
@@ -406,7 +403,8 @@ public class RSWidget implements Clickable07 {
 
     /**
      * Gets the parent widget
-     * @return  the parent widget for this RSWidget object
+     *
+     * @return the parent widget for this RSWidget object
      */
     public RSWidget getParent() {
         return new RSWidget(ctx, parentWidget);
@@ -414,6 +412,7 @@ public class RSWidget implements Clickable07 {
 
     /**
      * Gets the group index of this widget
+     *
      * @return the group index
      */
     public int getGroupIndex() {
@@ -422,6 +421,7 @@ public class RSWidget implements Clickable07 {
 
     /**
      * Gets the child index of this widget
+     *
      * @return the child index
      */
     public int getChildIndex() {
