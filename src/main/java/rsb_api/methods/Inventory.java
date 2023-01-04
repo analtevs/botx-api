@@ -601,17 +601,15 @@ public class Inventory {
 	 * @return the index of the item selected; otherwise -1
 	 */
 	public int getSelected(Image img, RSWidgetItem[] comps) {
-		/*
-		BufferedImage im = new BufferedImage(ctx.proxy.getCanvasWidth(),
-											 ctx.proxy.getCanvasHeight(),
-											 BufferedImage.TYPE_INT_ARGB);
+
+		BufferedImage im = new BufferedImage(ctx.proxy.getCanvasWidth(), ctx.proxy.getCanvasHeight(), BufferedImage.TYPE_INT_ARGB);
 		Graphics graphics = im.getGraphics();
 		graphics.drawImage(img, 0, 0, null);
 		for (int c = 0; c < Math.min(comps.length, 28); ++c) {
 			RSItem item = new RSItem(ctx, comps[c]);
 			int x = item.getItem().getItemLocation().getX();
 			int y = item.getItem().getItemLocation().getY();
-			BufferedImage itemImage = ctx.runeLite.getItemManager().getImage(item.getID());
+			BufferedImage itemImage = ctx.runeLite.itemManager.getImage(item.getID());
 			int height = itemImage.getHeight();
 			int width = itemImage.getWidth();
 			for (int i = 0; i < height; i++) {
@@ -627,7 +625,7 @@ public class Inventory {
 				}
 			}
 		}
-		*/
+
 		return -1;
 	}
 
